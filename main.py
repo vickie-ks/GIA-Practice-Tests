@@ -12,7 +12,7 @@ import PIL
 import random
 
 # ---------------------------- COLORS ------------------------------- #
-CHAMPAGNE_PINK = "#F2DFD7"
+CHAMPAGNE_PINK = "#000000"
 GHOST_WHITE = "#FEF9FF"
 THISTLE = "#D4C1EC"
 MAXIMUM_BLUE_PURPLE = "#9F9FED"
@@ -409,15 +409,13 @@ def draw_image(side, angle):
     image = Image.new(mode="RGB", size=(100, 100), color="white")
     # Draw a black R on the image
     draw = ImageDraw.Draw(image)
-    draw.text((20, 1), character, font=letter_font, fill='black', align='center', stroke_width=1,
-              stroke_fill='black')
+    draw.text((20, 1), character, font=letter_font, fill='black', align='center', stroke_width=1, stroke_fill='black')
     # Rotate the image
     image = image.rotate(angle)
     # Flip the image horizontally if needed
     if side == 1:
         image = image.transpose(method=Image.FLIP_LEFT_RIGHT)
     return image
-
 
 def get_pairs_image(images: list):
     """ Function which generates a picture of both pairs. """
@@ -427,7 +425,7 @@ def get_pairs_image(images: list):
         pairs_image_row = np.hstack([images[index], images[index + 2]])
         pairs_image_rows.append(pairs_image_row)
     image_pairs = np.vstack([i for i in pairs_image_rows])
-    image_pairs = PIL.Image.fromarray(image_pairs)
+    image_pairs = Image.fromarray(image_pairs)
     image_pairs = image_pairs.resize((75, 75), resample=0)
     # image_pairs.show()
 

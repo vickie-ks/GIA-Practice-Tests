@@ -1,7 +1,9 @@
+import os
 from random import sample, randint, shuffle
 from datetime import datetime
 from fpdf import FPDF
-
+from PIL import Image, ImageTk
+import numpy as np
 
 def print_report_to_pdf(pdf, report):
     """ Function which writes the data from report in pdf file."""
@@ -31,13 +33,20 @@ def print_report_to_pdf(pdf, report):
             if column == "Pairs":
                 x_cord = pdf.get_x() + 10
                 y_cord = pdf.get_y() + 1
-                pdf.image(line[column], w=10, h=10, x=x_cord, y=y_cord)
+                image_path = save_image_temp(line[column])
+                pdf.image(image_path, w=10, h=10, x=x_cord, y=y_cord)
+                os.remove(image_path)  # Clean up temporary file
                 pdf.cell(table_cell_width, table_cell_height, " ", align='C', border=1)
             else:
                 value = str(line[column])
                 pdf.cell(table_cell_width, table_cell_height, value, align='C', border=1)
         pdf.ln(table_cell_height)
 
+def save_image_temp(image):
+    """ Save the PIL Image object to a temporary file and return the file path."""
+    temp_path = f'temp_{randint(1000, 9999)}.png'
+    image.save(temp_path)
+    return temp_path
 
 class SpatialVisualisation:
     def __init__(self):
@@ -94,8 +103,22 @@ class SpatialVisualisation:
         """ Insert an image of the pairs shown along with the correct answer and the user's choice
             inside a report list.
         """
-        self.report.append({"Question No": self.questions, "Pairs": images,
+        if not isinstance(images, list):
+            images = [images]
+        combined_image = self.create_combined_image(images)
+        self.report.append({"Question No": self.questions, "Pairs": combined_image,
                             "Correct answer": self.answer, "User choice": self.user_answer})
+
+    def create_combined_image(self, images):
+        """ Combine multiple PIL images into a single image for the report. """
+        pairs_image_rows = []
+        for index in range(0, len(images), 2):
+            pairs_image_row = np.hstack([np.array(img) for img in images[index:index+2]])
+            pairs_image_rows.append(pairs_image_row)
+        combined_image_array = np.vstack(pairs_image_rows)
+        combined_image = Image.fromarray(combined_image_array)
+        combined_image = combined_image.resize((150, 150), resample=0)
+        return combined_image
 
     def save_report(self):
         """ Saves the report of this test in a .pdf file. """
